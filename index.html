@@ -123,15 +123,19 @@
 </div>
 
 <script>
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx12rrQ8Jip_MmKro3WBVaAbygaTqttIo7I9Mvx0_UWCGJ051qvT1lxl047o2DxJZDRKQ/exec"; // Replace with your Apps Script URL
-  const SUBSCRIPTION_URL = "https://masomodigital.github.io/subscribe/"; // Redirect non-contacts here
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx12rrQ8Jip_MmKro3WBVaAbygaTqttIo7I9Mvx0_UWCGJ051qvT1lxl047o2DxJZDRKQ/exec"; // Replace with your Apps Script Web App URL
+  const SUBSCRIPTION_URL = "https://masomodigital.github.io/PRIME-CONTACTS/"; // Redirect non-contacts here
+
+  function normalizePhone(phone) {
+    return phone.toString().replace(/\D/g, "").slice(-9);
+  }
 
   document.getElementById("login-form").addEventListener("submit", async function(e) {
     e.preventDefault();
     document.getElementById("error-message").textContent = "";
 
     const nationalId = document.getElementById("nationalId").value.trim();
-    const phoneNumber = document.getElementById("phoneNumber").value.trim();
+    const phoneNumber = normalizePhone(document.getElementById("phoneNumber").value.trim());
 
     if (!nationalId || !phoneNumber) {
       document.getElementById("error-message").textContent = "Please enter both fields.";
@@ -146,10 +150,11 @@
       });
 
       const data = await response.json();
+      console.log(data); // Debug: check what backend returns
 
       if (!data.success) {
         // Redirect to subscription page if access denied
-        window.location.href = https://masomodigital.github.io/PRIME-CONTACTS/;
+        window.location.href = SUBSCRIPTION_URL;
         return;
       }
 
