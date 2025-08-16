@@ -123,9 +123,10 @@
 </div>
 
 <script>
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx12rrQ8Jip_MmKro3WBVaAbygaTqttIo7I9Mvx0_UWCGJ051qvT1lxl047o2DxJZDRKQ/exec"; // Replace with your Apps Script Web App URL
-  const SUBSCRIPTION_URL = "https://masomodigital.github.io/PRIME-CONTACTS/"; // Redirect non-contacts here
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx12rrQ8Jip_MmKro3WBVaAbygaTqttIo7I9Mvx0_UWCGJ051qvT1lxl047o2DxJZDRKQ/exec";
+  const SUBSCRIPTION_URL = "https://masomodigital.github.io/PRIME-CONTACTS/";
 
+  // Normalize phone to last 9 digits
   function normalizePhone(phone) {
     return phone.toString().replace(/\D/g, "").slice(-9);
   }
@@ -150,15 +151,15 @@
       });
 
       const data = await response.json();
-      console.log(data); // Debug: check what backend returns
+      console.log("Backend response:", data);
 
       if (!data.success) {
-        // Redirect to subscription page if access denied
+        // Redirect non-contacts to subscription
         window.location.href = SUBSCRIPTION_URL;
         return;
       }
 
-      // Access granted → display products
+      // Show products
       const productsSection = document.getElementById("products-section");
       productsSection.innerHTML = "";
       productsSection.style.display = "grid";
@@ -195,7 +196,7 @@
         productsSection.appendChild(card);
       });
 
-      // Hide login form after successful login
+      // Hide login form after login
       document.getElementById("login-form").style.display = "none";
 
     } catch (err) {
