@@ -26,8 +26,9 @@
   .prime-button { display:inline-block; background-color:red; color:white; padding:12px 25px; text-decoration:none; border-radius:8px; margin-top:5px; text-align:center; line-height:1.5; font-weight:bold; transition: transform 0.2s, box-shadow 0.3s; }
   .prime-button:hover { transform: scale(1.05); box-shadow:0 4px 15px rgba(0,0,0,0.2); }
 
-  /* Error message */
+  /* Messages */
   .error { color:red; font-weight:bold; margin-bottom:15px; text-align:center; }
+  .status { color:green; font-weight:bold; text-align:center; margin-top:10px; }
 
   /* Products grid */
   .products { display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:20px; }
@@ -67,6 +68,7 @@
         Sign Up As A Prime Contact
       </a>
     </form>
+    <div id="login-status" class="status"></div> <!-- Status message -->
   </div>
 
   <div id="products-section" class="products"></div>
@@ -82,12 +84,14 @@ function normalizePhone(phone) {
 document.getElementById("login-form").addEventListener("submit", async function(e) {
   e.preventDefault();
   document.getElementById("error-message").textContent = "";
+  document.getElementById("login-status").textContent = "Wait please..."; // Show green message
 
   const nationalId = document.getElementById("nationalId").value.trim();
   const phoneNumber = normalizePhone(document.getElementById("phoneNumber").value.trim());
 
   if (!nationalId || !phoneNumber) {
     document.getElementById("error-message").textContent = "Please enter both fields.";
+    document.getElementById("login-status").textContent = ""; // Clear green message
     return;
   }
 
@@ -103,6 +107,7 @@ document.getElementById("login-form").addEventListener("submit", async function(
 
     if (!data.success) {
       document.getElementById("error-message").textContent = data.message || "Access denied.";
+      document.getElementById("login-status").textContent = ""; // Clear green message
       return;
     }
 
@@ -145,10 +150,12 @@ document.getElementById("login-form").addEventListener("submit", async function(
 
     document.getElementById("login-form").style.display = "none";
     productsSection.classList.add("show"); // fade-in animation
+    document.getElementById("login-status").textContent = ""; // Clear green message
 
   } catch (err) {
     console.error(err);
     document.getElementById("error-message").textContent = "Server error. Please try again.";
+    document.getElementById("login-status").textContent = ""; // Clear green message
   }
 });
 </script>
