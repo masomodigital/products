@@ -1,109 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Masomo SMS Products</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f7f7f7;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 900px;
-      margin: 50px auto;
-      padding: 20px;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-      color: #333;
-    }
-    .login-form {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      margin-bottom: 30px;
-    }
-    .login-form input {
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    .login-form button {
-      padding: 12px;
-      font-size: 16px;
-      background: #28a745;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .login-form button:hover {
-      background: #218838;
-    }
-    .error {
-      color: red;
-      font-weight: bold;
-      margin-bottom: 15px;
-      text-align: center;
-    }
-    .products {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-    }
-    .product-card {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      overflow: hidden;
-      background: #fff;
-      display: flex;
-      flex-direction: column;
-    }
-    .product-card img {
-      width: 100%;
-      height: 150px;
-      object-fit: cover;
-    }
-    .product-content {
-      padding: 15px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .product-title {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 10px;
-      color: #333;
-    }
-    .product-desc {
-      flex: 1;
-      font-size: 14px;
-      margin-bottom: 10px;
-      color: #555;
-    }
-    .product-link {
-      text-align: center;
-      padding: 10px;
-      background: #007bff;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 5px;
-      font-weight: bold;
-    }
-    .product-link:hover {
-      background: #0056b3;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masomo SMS Products</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f7f7f7; margin:0; padding:0; }
+  .container { max-width: 900px; margin:50px auto; padding:20px; background:#fff; border-radius:8px; box-shadow:0 0 15px rgba(0,0,0,0.1); }
+  h1 { text-align:center; margin-bottom:30px; color:#333; }
+  .login-form { display:flex; flex-direction:column; gap:15px; margin-bottom:30px; }
+  .login-form input { padding:12px; font-size:16px; border-radius:5px; border:1px solid #ccc; }
+  .login-form button { padding:12px; font-size:16px; background:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer; }
+  .login-form button:hover { background:#218838; }
+  .error { color:red; font-weight:bold; margin-bottom:15px; text-align:center; }
+  .products { display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:20px; }
+  .product-card { border:1px solid #ddd; border-radius:8px; overflow:hidden; background:#fff; display:flex; flex-direction:column; }
+  .product-card img { width:100%; height:150px; object-fit:cover; }
+  .product-content { padding:15px; flex:1; display:flex; flex-direction:column; justify-content:space-between; }
+  .product-title { font-size:18px; font-weight:bold; margin-bottom:10px; color:#333; }
+  .product-desc { flex:1; font-size:14px; margin-bottom:10px; color:#555; }
+  .product-link { text-align:center; padding:10px; background:#007bff; color:#fff; text-decoration:none; border-radius:5px; font-weight:bold; }
+  .product-link:hover { background:#0056b3; }
+</style>
 </head>
 <body>
 
@@ -119,92 +37,89 @@
     </form>
   </div>
 
-  <div id="products-section" class="products" style="display: none;"></div>
+  <div id="products-section" class="products" style="display:none;"></div>
 </div>
 
 <script>
-  const WEB_APP_URL = "https://twilight-smoke-5655.ev-dmaundu.workers.dev/";
-  const SUBSCRIPTION_URL = "https://masomodigital.github.io/PRIME-CONTACTS/";
+const WEB_APP_URL = "https://twilight-smoke-5655.ev-dmaundu.workers.dev/";
 
-  // Normalize phone to last 9 digits
-  function normalizePhone(phone) {
-    return phone.toString().replace(/\D/g, "").slice(-9);
+function normalizePhone(phone) {
+  return phone.toString().replace(/\D/g, "").slice(-9);
+}
+
+document.getElementById("login-form").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  document.getElementById("error-message").textContent = "";
+
+  const nationalId = document.getElementById("nationalId").value.trim();
+  const phoneNumber = normalizePhone(document.getElementById("phoneNumber").value.trim());
+
+  if (!nationalId || !phoneNumber) {
+    document.getElementById("error-message").textContent = "Please enter both fields.";
+    return;
   }
 
-  document.getElementById("login-form").addEventListener("submit", async function(e) {
-    e.preventDefault();
-    document.getElementById("error-message").textContent = "";
+  try {
+    const response = await fetch(WEB_APP_URL, {
+      method: "POST",
+      body: JSON.stringify({ nationalId, phoneNumber }),
+      headers: { "Content-Type": "application/json" }
+    });
 
-    const nationalId = document.getElementById("nationalId").value.trim();
-    const phoneNumber = normalizePhone(document.getElementById("phoneNumber").value.trim());
+    const data = await response.json();
+    console.log("Backend response:", data);
 
-    if (!nationalId || !phoneNumber) {
-      document.getElementById("error-message").textContent = "Please enter both fields.";
+    if (!data.success) {
+      document.getElementById("error-message").textContent = data.message || "Access denied.";
       return;
     }
 
-    try {
-      const response = await fetch(WEB_APP_URL, {
-        method: "POST",
-        body: JSON.stringify({ nationalId, phoneNumber }),
-        headers: { "Content-Type": "application/json" }
-      });
+    // Show products
+    const productsSection = document.getElementById("products-section");
+    productsSection.innerHTML = "";
+    productsSection.style.display = "grid";
 
-      const data = await response.json();
-      console.log("Backend response:", data);
+    data.products.forEach(product => {
+      const card = document.createElement("div");
+      card.className = "product-card";
 
-      if (!data.success) {
-        // Redirect non-contacts to subscription
-        window.location.href = SUBSCRIPTION_URL;
-        return;
-      }
+      const img = document.createElement("img");
+      img.src = product.coverImage || "https://via.placeholder.com/300x150?text=No+Image";
+      card.appendChild(img);
 
-      // Show products
-      const productsSection = document.getElementById("products-section");
-      productsSection.innerHTML = "";
-      productsSection.style.display = "grid";
+      const content = document.createElement("div");
+      content.className = "product-content";
 
-      data.products.forEach(product => {
-        const card = document.createElement("div");
-        card.className = "product-card";
+      const title = document.createElement("div");
+      title.className = "product-title";
+      title.textContent = product.title;
+      content.appendChild(title);
 
-        const img = document.createElement("img");
-        img.src = product.coverImage || "https://via.placeholder.com/300x150?text=No+Image";
-        card.appendChild(img);
+      const desc = document.createElement("div");
+      desc.className = "product-desc";
+      desc.textContent = product.description || "";
+      content.appendChild(desc);
 
-        const content = document.createElement("div");
-        content.className = "product-content";
+      const link = document.createElement("a");
+      link.className = "product-link";
+      link.href = product.fileLink;
+      link.target = "_blank";
+      link.textContent = "View / Download";
+      content.appendChild(link);
 
-        const title = document.createElement("div");
-        title.className = "product-title";
-        title.textContent = product.title;
-        content.appendChild(title);
+      card.appendChild(content);
+      productsSection.appendChild(card);
+    });
 
-        const desc = document.createElement("div");
-        desc.className = "product-desc";
-        desc.textContent = product.description || "";
-        content.appendChild(desc);
+    document.getElementById("login-form").style.display = "none";
 
-        const link = document.createElement("a");
-        link.className = "product-link";
-        link.href = product.fileLink;
-        link.target = "_blank";
-        link.textContent = "View / Download";
-        content.appendChild(link);
-
-        card.appendChild(content);
-        productsSection.appendChild(card);
-      });
-
-      // Hide login form after login
-      document.getElementById("login-form").style.display = "none";
-
-    } catch (err) {
-      console.error(err);
-      document.getElementById("error-message").textContent = "Server error. Please try again.";
-    }
-  });
+  } catch (err) {
+    console.error(err);
+    document.getElementById("error-message").textContent = "Server error. Please try again.";
+  }
+});
 </script>
 
 </body>
 </html>
+
