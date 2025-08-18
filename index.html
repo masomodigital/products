@@ -152,7 +152,16 @@ document.getElementById("login-form").addEventListener("submit", async function(
       link.textContent = "View / Download";
       link.onclick = () => {
         const frame = document.getElementById("product-frame");
-        frame.src = product.fileLink;
+        let fileUrl = product.fileLink;
+
+        // If it's a Google Drive link, convert to preview
+        const driveMatch = fileUrl.match(/https:\/\/drive\.google\.com\/file\/d\/([^/]+)/);
+        if (driveMatch) {
+          const fileId = driveMatch[1];
+          fileUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+        }
+
+        frame.src = fileUrl;
         frame.style.display = "block";
         frame.scrollIntoView({ behavior: "smooth" });
       };
