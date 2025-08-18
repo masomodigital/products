@@ -92,9 +92,23 @@ function normalizePhone(phone) {
   return phone.toString().replace(/\D/g, "").slice(-9);
 }
 
+// Updated Drive image handler for any sharing link format
 function getDriveImageUrl(url) {
-  const match = url.match(/https:\/\/drive\.google\.com\/file\/d\/([^/]+)/);
-  return match ? `https://drive.google.com/uc?export=view&id=${match[1]}` : url;
+  let fileId = null;
+
+  // Format: /file/d/FILE_ID/
+  const match1 = url.match(/\/file\/d\/([^/]+)/);
+  if (match1) fileId = match1[1];
+
+  // Format: id=FILE_ID
+  const match2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (!fileId && match2) fileId = match2[1];
+
+  // Format: /uc?id=FILE_ID
+  const match3 = url.match(/\/uc\?id=([a-zA-Z0-9_-]+)/);
+  if (!fileId && match3) fileId = match3[1];
+
+  return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
 }
 
 document.getElementById("login-form").addEventListener("submit", async function(e) {
