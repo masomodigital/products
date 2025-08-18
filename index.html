@@ -154,11 +154,18 @@ document.getElementById("login-form").addEventListener("submit", async function(
         const frame = document.getElementById("product-frame");
         let fileUrl = product.fileLink;
 
-        // If it's a Google Drive link, convert to preview
+        // Google Drive handling
         const driveMatch = fileUrl.match(/https:\/\/drive\.google\.com\/file\/d\/([^/]+)/);
         if (driveMatch) {
           const fileId = driveMatch[1];
           fileUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+        }
+
+        // YouTube handling
+        const ytMatch = fileUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+        if (ytMatch) {
+          const videoId = ytMatch[1];
+          fileUrl = `https://www.youtube.com/embed/${videoId}`;
         }
 
         frame.src = fileUrl;
@@ -167,7 +174,7 @@ document.getElementById("login-form").addEventListener("submit", async function(
       };
       content.appendChild(link);
 
-      // Add Views count
+      // Views count
       const views = document.createElement("div");
       views.style.marginTop = "8px";
       views.style.textAlign = "center";
