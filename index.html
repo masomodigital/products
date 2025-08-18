@@ -35,7 +35,8 @@
   .product-card { border:1px solid #ddd; border-radius:12px; overflow:hidden; background:#fff; display:flex; flex-direction:column; transition: transform 0.3s, box-shadow 0.3s; }
   .product-card:hover { transform: translateY(-5px); box-shadow:0 8px 20px rgba(0,0,0,0.1); }
 
-  .product-card img { width:100%; height:160px; object-fit:cover; transition: transform 0.3s; }
+  /* Cover image small & uniform */
+  .product-card img { width:100%; height:140px; object-fit:cover; transition: transform 0.3s; }
   .product-card:hover img { transform: scale(1.05); }
 
   .product-content { padding:15px; flex:1; display:flex; flex-direction:column; justify-content:space-between; }
@@ -73,7 +74,7 @@
         Sign Up As A Prime Contact
       </a>
     </form>
-    <div id="login-status" class="status"></div> <!-- Status message -->
+    <div id="login-status" class="status"></div>
   </div>
 
   <div id="products-section" class="products"></div>
@@ -91,17 +92,22 @@ function normalizePhone(phone) {
   return phone.toString().replace(/\D/g, "").slice(-9);
 }
 
+function getDriveImageUrl(url) {
+  const match = url.match(/https:\/\/drive\.google\.com\/file\/d\/([^/]+)/);
+  return match ? `https://drive.google.com/uc?export=view&id=${match[1]}` : url;
+}
+
 document.getElementById("login-form").addEventListener("submit", async function(e) {
   e.preventDefault();
   document.getElementById("error-message").textContent = "";
-  document.getElementById("login-status").textContent = "Wait please..."; // Show green message
+  document.getElementById("login-status").textContent = "Wait please...";
 
   const nationalId = document.getElementById("nationalId").value.trim();
   const phoneNumber = normalizePhone(document.getElementById("phoneNumber").value.trim());
 
   if (!nationalId || !phoneNumber) {
     document.getElementById("error-message").textContent = "Please enter both fields.";
-    document.getElementById("login-status").textContent = ""; // Clear green message
+    document.getElementById("login-status").textContent = "";
     return;
   }
 
@@ -117,11 +123,10 @@ document.getElementById("login-form").addEventListener("submit", async function(
 
     if (!data.success) {
       document.getElementById("error-message").textContent = data.message || "Access denied.";
-      document.getElementById("login-status").textContent = ""; // Clear green message
+      document.getElementById("login-status").textContent = "";
       return;
     }
 
-    // Show products
     const productsSection = document.getElementById("products-section");
     productsSection.innerHTML = "";
     productsSection.style.display = "grid";
@@ -131,7 +136,7 @@ document.getElementById("login-form").addEventListener("submit", async function(
       card.className = "product-card";
 
       const img = document.createElement("img");
-      img.src = product.coverImage || "https://via.placeholder.com/300x160?text=No+Image";
+      img.src = product.coverImage ? getDriveImageUrl(product.coverImage) : "https://via.placeholder.com/300x160?text=No+Image";
       card.appendChild(img);
 
       const content = document.createElement("div");
@@ -154,19 +159,13 @@ document.getElementById("login-form").addEventListener("submit", async function(
         const frame = document.getElementById("product-frame");
         let fileUrl = product.fileLink;
 
-        // Google Drive handling
+        // Google Drive preview
         const driveMatch = fileUrl.match(/https:\/\/drive\.google\.com\/file\/d\/([^/]+)/);
-        if (driveMatch) {
-          const fileId = driveMatch[1];
-          fileUrl = `https://drive.google.com/file/d/${fileId}/preview`;
-        }
+        if (driveMatch) fileUrl = `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
 
-        // YouTube handling
+        // YouTube embed
         const ytMatch = fileUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
-        if (ytMatch) {
-          const videoId = ytMatch[1];
-          fileUrl = `https://www.youtube.com/embed/${videoId}`;
-        }
+        if (ytMatch) fileUrl = `https://www.youtube.com/embed/${ytMatch[1]}`;
 
         frame.src = fileUrl;
         frame.style.display = "block";
@@ -174,7 +173,6 @@ document.getElementById("login-form").addEventListener("submit", async function(
       };
       content.appendChild(link);
 
-      // Views count
       const views = document.createElement("div");
       views.style.marginTop = "8px";
       views.style.textAlign = "center";
@@ -187,13 +185,13 @@ document.getElementById("login-form").addEventListener("submit", async function(
     });
 
     document.getElementById("login-form").style.display = "none";
-    productsSection.classList.add("show"); // fade-in animation
-    document.getElementById("login-status").textContent = ""; // Clear green message
+    productsSection.classList.add("show");
+    document.getElementById("login-status").textContent = "";
 
   } catch (err) {
     console.error(err);
     document.getElementById("error-message").textContent = "Server error. Please try again.";
-    document.getElementById("login-status").textContent = ""; // Clear green message
+    document.getElementById("login-status").textContent = "";
   }
 });
 </script>
