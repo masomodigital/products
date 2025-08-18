@@ -37,10 +37,11 @@
 
   .product-content { padding:15px; flex:1; display:flex; flex-direction:column; justify-content:space-between; }
   .product-title { font-size:18px; font-weight:bold; margin-bottom:10px; color:#2c3e50; }
-  .product-creator { font-size:14px; font-weight:bold; margin-bottom:8px; color:green; } /* changed to green */
+  .product-creator { font-size:14px; font-weight:bold; margin-bottom:8px; color:green; } /* creator name in green */
   .product-desc { flex:1; font-size:14px; margin-bottom:10px; color:#555; }
   .product-link { text-align:center; padding:10px; background:#007bff; color:#fff; text-decoration:none; border-radius:5px; font-weight:bold; transition: background 0.3s, transform 0.2s; cursor:pointer; }
   .product-link:hover { background:#0056b3; transform: scale(1.05); }
+  .views-count { margin-top:8px; text-align:center; color:red; } /* views/downloads in red */
 
   /* Smooth fade-in for products */
   #products-section { opacity:0; transition: opacity 0.8s ease-in; }
@@ -135,11 +136,10 @@ document.getElementById("login-form").addEventListener("submit", async function(
       title.textContent = product.title;
       content.appendChild(title);
 
-      // Display creator name in green
+      // Display creator name (green via CSS class)
       const creator = document.createElement("div");
       creator.className = "product-creator";
       creator.textContent = `Creator: ${product.creatorName || "Unknown"}`;
-      creator.style.color = "green";
       content.appendChild(creator);
 
       const desc = document.createElement("div");
@@ -168,11 +168,9 @@ document.getElementById("login-form").addEventListener("submit", async function(
       };
       content.appendChild(link);
 
-      // Views/Downloads in red
+      // Views/Downloads in red (via CSS class)
       const views = document.createElement("div");
-      views.style.marginTop = "8px";
-      views.style.textAlign = "center";
-      views.style.color = "red";
+      views.className = "views-count";
       views.textContent = `Views/Downloads: ${product.views || 0}`;
       content.appendChild(views);
 
