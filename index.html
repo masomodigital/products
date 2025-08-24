@@ -136,7 +136,7 @@ document.getElementById("login-form").addEventListener("submit", async function(
       title.textContent = product.title;
       content.appendChild(title);
 
-      // Display creator name (green via CSS class)
+      // Display creator name
       const creator = document.createElement("div");
       creator.className = "product-creator";
       creator.textContent = `Creator: ${product.creatorName || "Unknown"}`;
@@ -150,7 +150,7 @@ document.getElementById("login-form").addEventListener("submit", async function(
       const link = document.createElement("button");
       link.className = "product-link";
       link.textContent = "View / Download";
-      link.onclick = () => {
+      link.onclick = async () => {
         const frame = document.getElementById("product-frame");
         let fileUrl = product.fileLink;
 
@@ -162,13 +162,22 @@ document.getElementById("login-form").addEventListener("submit", async function(
         const ytMatch = fileUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
         if (ytMatch) fileUrl = `https://www.youtube.com/embed/${ytMatch[1]}`;
 
+        // Show file
         frame.src = fileUrl;
         frame.style.display = "block";
         frame.scrollIntoView({ behavior: "smooth" });
+
+        // 🔴 NEW: Increment views for this product only
+        try {
+          await fetch(`${WEB_APP_URL}?action=incrementView&productId=${encodeURIComponent(product.productId)}`);
+          console.log("View count updated for", product.productId);
+        } catch (err) {
+          console.error("Failed to update views", err);
+        }
       };
       content.appendChild(link);
 
-      // Views/Downloads in red (via CSS class)
+      // Views/Downloads in red
       const views = document.createElement("div");
       views.className = "views-count";
       views.textContent = `Views/Downloads: ${product.views || 0}`;
