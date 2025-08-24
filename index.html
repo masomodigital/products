@@ -10,16 +10,16 @@
   .container:hover { transform: translateY(-5px); }
   h1 { text-align:center; margin-bottom:15px; color:#2c3e50; letter-spacing:1px; }
   p.intro { font-weight:bold; color:#007bff; text-align:center; font-size:16px; margin-bottom:30px; }
-  .login-form { display:flex; flex-direction:column; gap:15px; margin-bottom:30px; }
-  .login-form input { padding:12px; font-size:16px; border-radius:8px; border:1px solid #ccc; transition: border-color 0.3s, box-shadow 0.3s; }
-  .login-form input:focus { border-color:#007bff; box-shadow:0 0 8px rgba(0,123,255,0.3); outline:none; }
-  .login-form button { padding:12px; font-size:16px; background:#28a745; color:#fff; border:none; border-radius:8px; cursor:pointer; transition: background 0.3s, transform 0.2s; }
-  .login-form button:hover { background:#218838; transform: scale(1.05); }
+  .login-form, .search-form { display:flex; flex-direction:column; gap:15px; margin-bottom:30px; }
+  .login-form input, .search-form input { padding:12px; font-size:16px; border-radius:8px; border:1px solid #ccc; transition: border-color 0.3s, box-shadow 0.3s; }
+  .login-form input:focus, .search-form input:focus { border-color:#007bff; box-shadow:0 0 8px rgba(0,123,255,0.3); outline:none; }
+  .login-form button, .search-form button { padding:12px; font-size:16px; background:#28a745; color:#fff; border:none; border-radius:8px; cursor:pointer; transition: background 0.3s, transform 0.2s; }
+  .login-form button:hover, .search-form button:hover { background:#218838; transform: scale(1.05); }
   .prime-button { display:inline-block; background-color:red; color:white; padding:12px 25px; text-decoration:none; border-radius:8px; margin-top:5px; text-align:center; line-height:1.5; font-weight:bold; transition: transform 0.2s, box-shadow 0.3s; }
   .prime-button:hover { transform: scale(1.05); box-shadow:0 4px 15px rgba(0,0,0,0.2); }
   .error { color:red; font-weight:bold; margin-bottom:15px; text-align:center; }
   .status { color:green; font-weight:bold; text-align:center; margin-top:10px; }
-  .products { display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:20px; margin-top:15px; }
+  .products { display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:20px; }
   .product-card { border:1px solid #ddd; border-radius:12px; overflow:hidden; background:#fff; display:flex; flex-direction:column; transition: transform 0.3s, box-shadow 0.3s; }
   .product-card:hover { transform: translateY(-5px); box-shadow:0 8px 20px rgba(0,0,0,0.1); }
   .product-content { padding:15px; flex:1; display:flex; flex-direction:column; justify-content:space-between; }
@@ -33,8 +33,6 @@
   #products-section.show { opacity:1; }
   #viewer { margin-top:30px; }
   #product-frame { width:100%; height:600px; border:1px solid #ccc; border-radius:8px; display:none; }
-  #search-section { margin:15px 0; text-align:center; }
-  #search-input { padding:10px; width:250px; border-radius:8px; border:1px solid #ccc; font-size:14px; }
 </style>
 </head>
 <body>
@@ -60,14 +58,16 @@
     <div id="login-status" class="status"></div>
   </div>
 
-  <!-- Search Section -->
-  <div id="search-section" style="display:none;">
-    <input type="text" id="search-input" placeholder="Search by National ID">
+  <!-- 🔎 Search by Creator Name -->
+  <div class="search-section" style="display:none;">
+    <form id="search-form" class="search-form">
+      <input type="text" id="searchQuery" placeholder="Search by Creator Name">
+      <button type="submit">Search</button>
+    </form>
   </div>
 
   <div id="products-section" class="products"></div>
 
-  <!-- Viewer Section -->
   <div id="viewer">
     <iframe id="product-frame"></iframe>
   </div>
@@ -75,12 +75,11 @@
 
 <script>
 const WEB_APP_URL = "https://twilight-smoke-5655.ev-dmaundu.workers.dev/";
+let allProducts = [];
 
 function normalizePhone(phone) {
   return phone.toString().replace(/\D/g, "").slice(-9);
 }
-
-let allProducts = []; // Store all products for search filtering
 
 document.getElementById("login-form").addEventListener("submit", async function(e) {
   e.preventDefault();
@@ -112,14 +111,11 @@ document.getElementById("login-form").addEventListener("submit", async function(
       return;
     }
 
-    allProducts = data.products; // store for filtering
-
-    const searchSection = document.getElementById("search-section");
-    searchSection.style.display = "block";
-
+    allProducts = data.products; // save globally for search
     renderProducts(allProducts);
 
     document.getElementById("login-form").style.display = "none";
+    document.querySelector(".search-section").style.display = "block"; // show search
     document.getElementById("login-status").textContent = "";
 
   } catch (err) {
@@ -129,7 +125,15 @@ document.getElementById("login-form").addEventListener("submit", async function(
   }
 });
 
-// Render products function
+// 🔎 Search by creatorName
+document.getElementById("search-form").addEventListener("submit", function(e) {
+  e.preventDefault();
+  const query = document.getElementById("searchQuery").value.trim().toLowerCase();
+  const filtered = allProducts.filter(p => p.creatorName.toLowerCase().includes(query));
+  renderProducts(filtered);
+});
+
+// Function to render products
 function renderProducts(products) {
   const productsSection = document.getElementById("products-section");
   productsSection.innerHTML = "";
@@ -197,17 +201,6 @@ function renderProducts(products) {
 
   productsSection.classList.add("show");
 }
-
-// Search input event
-document.getElementById("search-input").addEventListener("input", function() {
-  const query = this.value.trim();
-  if (!query) {
-    renderProducts(allProducts);
-    return;
-  }
-  const filtered = allProducts.filter(p => String(p.productId) === query);
-  renderProducts(filtered);
-});
 </script>
 
 </body>
