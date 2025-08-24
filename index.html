@@ -5,36 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Masomo SMS Products</title>
 <style>
-  /* General body & container */
   body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg,#f5f7fa,#c3cfe2); margin:0; padding:0; }
   .container { max-width: 900px; margin:50px auto; padding:25px; background:#fff; border-radius:12px; box-shadow:0 8px 25px rgba(0,0,0,0.15); transition: transform 0.3s ease; }
   .container:hover { transform: translateY(-5px); }
-
-  /* Headings & intro */
   h1 { text-align:center; margin-bottom:15px; color:#2c3e50; letter-spacing:1px; }
   p.intro { font-weight:bold; color:#007bff; text-align:center; font-size:16px; margin-bottom:30px; }
-
-  /* Login form */
   .login-form { display:flex; flex-direction:column; gap:15px; margin-bottom:30px; }
   .login-form input { padding:12px; font-size:16px; border-radius:8px; border:1px solid #ccc; transition: border-color 0.3s, box-shadow 0.3s; }
   .login-form input:focus { border-color:#007bff; box-shadow:0 0 8px rgba(0,123,255,0.3); outline:none; }
-
-  /* Buttons */
   .login-form button { padding:12px; font-size:16px; background:#28a745; color:#fff; border:none; border-radius:8px; cursor:pointer; transition: background 0.3s, transform 0.2s; }
   .login-form button:hover { background:#218838; transform: scale(1.05); }
-
   .prime-button { display:inline-block; background-color:red; color:white; padding:12px 25px; text-decoration:none; border-radius:8px; margin-top:5px; text-align:center; line-height:1.5; font-weight:bold; transition: transform 0.2s, box-shadow 0.3s; }
   .prime-button:hover { transform: scale(1.05); box-shadow:0 4px 15px rgba(0,0,0,0.2); }
-
-  /* Messages */
   .error { color:red; font-weight:bold; margin-bottom:15px; text-align:center; }
   .status { color:green; font-weight:bold; text-align:center; margin-top:10px; }
-
-  /* Products grid */
-  .products { display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:20px; }
+  .products { display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:20px; margin-top:15px; }
   .product-card { border:1px solid #ddd; border-radius:12px; overflow:hidden; background:#fff; display:flex; flex-direction:column; transition: transform 0.3s, box-shadow 0.3s; }
   .product-card:hover { transform: translateY(-5px); box-shadow:0 8px 20px rgba(0,0,0,0.1); }
-
   .product-content { padding:15px; flex:1; display:flex; flex-direction:column; justify-content:space-between; }
   .product-title { font-size:18px; font-weight:bold; margin-bottom:10px; color:#2c3e50; }
   .product-creator { font-size:14px; font-weight:bold; margin-bottom:8px; color:green; }
@@ -42,14 +29,12 @@
   .product-link { text-align:center; padding:10px; background:#007bff; color:#fff; text-decoration:none; border-radius:5px; font-weight:bold; transition: background 0.3s, transform 0.2s; cursor:pointer; }
   .product-link:hover { background:#0056b3; transform: scale(1.05); }
   .views-count { margin-top:8px; text-align:center; color:red; }
-
-  /* Smooth fade-in for products */
   #products-section { opacity:0; transition: opacity 0.8s ease-in; }
   #products-section.show { opacity:1; }
-
-  /* Viewer */
   #viewer { margin-top:30px; }
   #product-frame { width:100%; height:600px; border:1px solid #ccc; border-radius:8px; display:none; }
+  #search-section { margin:15px 0; text-align:center; }
+  #search-input { padding:10px; width:250px; border-radius:8px; border:1px solid #ccc; font-size:14px; }
 </style>
 </head>
 <body>
@@ -75,6 +60,11 @@
     <div id="login-status" class="status"></div>
   </div>
 
+  <!-- Search Section -->
+  <div id="search-section" style="display:none;">
+    <input type="text" id="search-input" placeholder="Search by National ID">
+  </div>
+
   <div id="products-section" class="products"></div>
 
   <!-- Viewer Section -->
@@ -89,6 +79,8 @@ const WEB_APP_URL = "https://twilight-smoke-5655.ev-dmaundu.workers.dev/";
 function normalizePhone(phone) {
   return phone.toString().replace(/\D/g, "").slice(-9);
 }
+
+let allProducts = []; // Store all products for search filtering
 
 document.getElementById("login-form").addEventListener("submit", async function(e) {
   e.preventDefault();
@@ -120,76 +112,14 @@ document.getElementById("login-form").addEventListener("submit", async function(
       return;
     }
 
-    const productsSection = document.getElementById("products-section");
-    productsSection.innerHTML = "";
-    productsSection.style.display = "grid";
+    allProducts = data.products; // store for filtering
 
-    data.products.forEach(product => {
-      const card = document.createElement("div");
-      card.className = "product-card";
+    const searchSection = document.getElementById("search-section");
+    searchSection.style.display = "block";
 
-      const content = document.createElement("div");
-      content.className = "product-content";
-
-      const title = document.createElement("div");
-      title.className = "product-title";
-      title.textContent = product.title;
-      content.appendChild(title);
-
-      const creator = document.createElement("div");
-      creator.className = "product-creator";
-      creator.textContent = `Creator: ${product.creatorName || "Unknown"}`;
-      content.appendChild(creator);
-
-      const desc = document.createElement("div");
-      desc.className = "product-desc";
-      desc.textContent = product.description || "";
-      content.appendChild(desc);
-
-      const views = document.createElement("div");
-      views.className = "views-count";
-      views.textContent = `Views/Downloads: ${product.views || 0}`;
-      content.appendChild(views);
-
-      const link = document.createElement("button");
-      link.className = "product-link";
-      link.textContent = "View / Download";
-      link.onclick = async () => {
-        const frame = document.getElementById("product-frame");
-        let fileUrl = product.fileLink;
-
-        // Google Drive preview
-        const driveMatch = fileUrl.match(/https:\/\/drive\.google\.com\/file\/d\/([^/]+)/);
-        if (driveMatch) fileUrl = `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
-
-        // YouTube embed
-        const ytMatch = fileUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
-        if (ytMatch) fileUrl = `https://www.youtube.com/embed/${ytMatch[1]}`;
-
-        frame.src = fileUrl;
-        frame.style.display = "block";
-        frame.scrollIntoView({ behavior: "smooth" });
-
-        // 🔴 Increment views for this product only and update UI
-        try {
-          const incrementResp = await fetch(`${WEB_APP_URL}?action=incrementView&productId=${encodeURIComponent(product.productId)}`);
-          if (incrementResp.ok) {
-            // Increment local UI count
-            let currentViews = parseInt(views.textContent.replace(/\D/g,'')) || 0;
-            views.textContent = `Views/Downloads: ${currentViews + 1}`;
-          }
-        } catch (err) {
-          console.error("Failed to update views", err);
-        }
-      };
-      content.appendChild(link);
-
-      card.appendChild(content);
-      productsSection.appendChild(card);
-    });
+    renderProducts(allProducts);
 
     document.getElementById("login-form").style.display = "none";
-    productsSection.classList.add("show");
     document.getElementById("login-status").textContent = "";
 
   } catch (err) {
@@ -197,6 +127,86 @@ document.getElementById("login-form").addEventListener("submit", async function(
     document.getElementById("error-message").textContent = "Server error. Please try again.";
     document.getElementById("login-status").textContent = "";
   }
+});
+
+// Render products function
+function renderProducts(products) {
+  const productsSection = document.getElementById("products-section");
+  productsSection.innerHTML = "";
+  productsSection.style.display = "grid";
+
+  products.forEach(product => {
+    const card = document.createElement("div");
+    card.className = "product-card";
+
+    const content = document.createElement("div");
+    content.className = "product-content";
+
+    const title = document.createElement("div");
+    title.className = "product-title";
+    title.textContent = product.title;
+    content.appendChild(title);
+
+    const creator = document.createElement("div");
+    creator.className = "product-creator";
+    creator.textContent = `Creator: ${product.creatorName || "Unknown"}`;
+    content.appendChild(creator);
+
+    const desc = document.createElement("div");
+    desc.className = "product-desc";
+    desc.textContent = product.description || "";
+    content.appendChild(desc);
+
+    const views = document.createElement("div");
+    views.className = "views-count";
+    views.textContent = `Views/Downloads: ${product.views || 0}`;
+    content.appendChild(views);
+
+    const link = document.createElement("button");
+    link.className = "product-link";
+    link.textContent = "View / Download";
+    link.onclick = async () => {
+      const frame = document.getElementById("product-frame");
+      let fileUrl = product.fileLink;
+
+      const driveMatch = fileUrl.match(/https:\/\/drive\.google\.com\/file\/d\/([^/]+)/);
+      if (driveMatch) fileUrl = `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+
+      const ytMatch = fileUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+      if (ytMatch) fileUrl = `https://www.youtube.com/embed/${ytMatch[1]}`;
+
+      frame.src = fileUrl;
+      frame.style.display = "block";
+      frame.scrollIntoView({ behavior: "smooth" });
+
+      try {
+        const incrementResp = await fetch(`${WEB_APP_URL}?action=incrementView&productId=${encodeURIComponent(product.productId)}`);
+        if (incrementResp.ok) {
+          let currentViews = parseInt(views.textContent.replace(/\D/g,'')) || 0;
+          views.textContent = `Views/Downloads: ${currentViews + 1}`;
+        }
+      } catch (err) {
+        console.error("Failed to update views", err);
+      }
+    };
+    content.appendChild(link);
+
+    card.appendChild(content);
+    productsSection.appendChild(card);
+  });
+
+  productsSection.classList.add("show");
+}
+
+// Search input event
+document.getElementById("search-input").addEventListener("input", function() {
+  const query = this.value.trim();
+  if (!query) {
+    renderProducts(allProducts);
+    return;
+  }
+  const filtered = allProducts.filter(p => String(p.productId) === query);
+  renderProducts(filtered);
 });
 </script>
 
